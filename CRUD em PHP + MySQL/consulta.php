@@ -25,7 +25,7 @@ $nome_pesquisa = $_GET['nome_pesquisa'] ?? '';  // Operador de coalescência nul
     <title>Listagem com Filtro</title>
 </head>
 <body>
-<div class="container-fluid" id="listagem_alunos">
+<div class="container-fluid" id="listagem_produtos">
     <div class="d-flex justify-content-center mt-2">
         <img src="https://portal.crea-sc.org.br/wp-content/uploads/2019/04/UNOESC-300x100.jpg" width="300px" />
     </div>
@@ -33,7 +33,7 @@ $nome_pesquisa = $_GET['nome_pesquisa'] ?? '';  // Operador de coalescência nul
     <hr>
 
     <a href="form_crud.php" class="btn btn-success">
-        Incluir um novo aluno
+        Incluir um novo produto
         <i class="fa-solid fa-user"></i>
     </a>
 
@@ -48,8 +48,8 @@ $nome_pesquisa = $_GET['nome_pesquisa'] ?? '';  // Operador de coalescência nul
 
                 <div class="form-floating">
                     <input id="filtro" type="search" name="nome_pesquisa" class="form-control"
-                           value="<?= $nome_pesquisa ?>" placeholder="Entre com o nome do aluno">
-                    <label for="filtro" class="pt-2">Entre com o nome do aluno</label>
+                           value="<?= $nome_pesquisa ?>" placeholder="Entre com o nome do produto">
+                    <label for="filtro" class="pt-2">Entre com o nome do produto</label>
                 </div>
 
                 <button type="submit" class="btn btn-primary">Buscar</button>
@@ -63,16 +63,17 @@ $nome_pesquisa = $_GET['nome_pesquisa'] ?? '';  // Operador de coalescência nul
 
     <div class="table-responsive">
         <table class="table table-striped table-bordered table-hover">
-            <caption>Relação de Alunos</caption>
+            <caption>Relação de Produtos</caption>
             <thead class="table-dark">
             <tr>
-                <th>Id</th>
-                <th>Nome</th>
-                <th>Nascimento</th>
-                <th>Salário (R$)</th>
-                <th>Sexo</th>
-                <th>Ativo</th>
-                <th>Curso</th>
+                <th>codigo_prd</th>
+                <th>descricao_prd</th>
+                <th>data_cadastro</th>
+                <th>preco (R$)</th>
+                <th>ativo</th>
+                <th>unidade</th>
+                <th>tipo_comissao</th>
+                <th>codigo_ctg</th>
                 <th>Foto</th>
                 <th>Ações</th>
             </tr>
@@ -81,49 +82,49 @@ $nome_pesquisa = $_GET['nome_pesquisa'] ?? '';  // Operador de coalescência nul
             <?php
             $filtro = "%{$nome_pesquisa}%";
 
-            $stmt = $conn->prepare('SELECT id_aluno, a.nome, nascimento, salario, sexo, ativo, a.id_curso, c.nome AS nome_curso, foto  
-                                                  FROM aluno a 
-                                                  JOIN curso c ON a.id_curso=c.id_curso 
-                                                  WHERE a.nome LIKE :nome_aluno ');
-            $stmt->bindParam(':nome_aluno', $filtro, PDO::PARAM_STR);
+            $stmt = $conn->prepare('SELECT codigo_prd, descricao_prd, data_cadastro, preco, ativo, unidade, tipo_comissao, c.codigo_ctg, c.descricao_ctg AS categoria, foto  
+                                                  FROM produto p
+                                                  JOIN categoria c ON c.codigo_ctg=c.codigo_ctg 
+                                                  WHERE descricao_prd LIKE :nome_produto ');
+            $stmt->bindParam(':nome_produto', $filtro, PDO::PARAM_STR);
             $stmt->execute();
 
-            while($aluno = $stmt->fetch()) {
-                $data_nascimento = date('d-m-Y', strtotime($aluno['nascimento']));
-                $salario = number_format($aluno['salario'],2,',','.');
+            while($produto = $stmt->fetch()) {
+                $data_cadastro = date('d-m-Y', strtotime($produto['cadastro']));
+                $preco = number_format($produto['preco'],2,',','.');
 
-                $sexos = ['m' => 'Masculino', 'f' => 'Feminino', 'n' => 'Não informado'];
-                $sexo = $sexos[$aluno['sexo']];
+                $tipo_comissao = ['s' => 'Sem comissao', 'f' => 'Comissao fixa', 'p' => 'Percentual de comissao'];
+                $tipo_comissao = $tipo_comissao[$produto['tipo_comissao']];
 
-                $ativo = $aluno['ativo'] ? 'Sim' : 'Não';
+                $ativo = $produto['ativo'] ? 'Sim' : 'Não';
                 ?>
 
                 <tr>
-                    <td style="width: 5%;" class="text-center bg-secondary"><?php echo $aluno['id_aluno'] ?></td>
+                    <td style="width: 5%;" class="text-center bg-secondary"><?php echo $produto['codigo_prd'] ?></td>
 
                     <td style="width: 17%;">
-                        <a href="detalhes.php?id_aluno=<?php echo $aluno['id_aluno'] ?>">
-                            <?= $aluno['nome'] ?>
+                        <a href="detalhes.php?codigo_prd=<?php echo $produto['codigo_prd'] ?>">
+                            <?= $produto['descricao_prd'] ?>
                         </a>
                     </td>
 
-                    <td style="width: 10%;" class="text-center"><?= $data_nascimento ?></td>
-                    <td style="width: 10%;" class="text-end"><?= $salario ?></td>
-                    <td style="width: 10%;"><?= $sexo ?></td>
+                    <td style="width: 10%;" class="text-center"><?= $data_cadastro ?></td>
+                    <td style="width: 10%;" class="text-end"><?= $preco ?></td>
+                    <td style="width: 10%;"><?= $tipo_comissao ?></td>
                     <td style="width: 5%;"><?= $ativo ?></td>
-                    <td style="width: 18%;"><?= $aluno['nome_curso'] ?></td>
+                    <td style="width: 18%;"><?= $produto['descricao_ctg'] ?></td>
 
                     <td style="width: 15%;" class="imagem">
-                        <a href="detalhes.php?id_aluno=<?= $aluno['id_aluno'] ?>">
-                            <?php echo '<img src="data:image/png;base64,' . base64_encode($aluno['foto']) . '" height="200px"/>'; ?>
+                        <a href="detalhes.php?codigo_prd=<?= $produto['codigo_prd'] ?>">
+                            <?php echo '<img src="data:image/png;base64,' . base64_encode($produto['foto']) . '" height="200px"/>'; ?>
                         </a>
                     </td>
 
                     <td style="width: 10%;" class="text-center">
                         <span class="icones">
-                            <a href="form_crud.php?id_aluno=<?= $aluno['id_aluno'] ?>"><i class="fa-solid fa-edit fa-lg"></i></a>
+                            <a href="form_crud.php?codigo_prd=<?= $produto['codigo_prd'] ?>"><i class="fa-solid fa-edit fa-lg"></i></a>
 
-                            <button type="button" class="btn btn-link p-0 btn-excluir" style="color: red" data-bs-toggle="modal" data-bs-target="#meuModal" data-id="<?= $aluno['id_aluno'] ?>" data-nome="<?= $aluno['nome'] ?>">
+                            <button type="button" class="btn btn-link p-0 btn-excluir" style="color: red" data-bs-toggle="modal" data-bs-target="#meuModal" data-id="<?= $produto['codigo_prd'] ?>" data-nome="<?= $produto['descricao_prd'] ?>">
                                 <span class="fa-solid fa-trash fa-xl"></span>
                             </button>
                         </span>
@@ -170,7 +171,7 @@ $nome_pesquisa = $_GET['nome_pesquisa'] ?? '';  // Operador de coalescência nul
 
 <script>
     $(document).ready(function() {
-        let id_aluno, elemento;
+        let codigo_prd, elemento;
 
         $("#btnLimpar").on("click", function (e) {
             e.preventDefault();
@@ -181,10 +182,10 @@ $nome_pesquisa = $_GET['nome_pesquisa'] ?? '';  // Operador de coalescência nul
         $('.btn-excluir').click(function() {
             elemento = $(this).parent().parent().parent();
 
-            id_aluno = $(this).data('id');
+            codigo_prd = $(this).data('id');
             let nome = $(this).data('nome');
 
-            let texto = `Clique em Ok para excluir o registro "<strong>${id_aluno} - ${nome}</strong>"&hellip;`;
+            let texto = `Clique em Ok para excluir o registro "<strong>${codigo_prd} - ${produto}</strong>"&hellip;`;
             $('.modal-body').html(texto);
         });
 
@@ -192,7 +193,7 @@ $nome_pesquisa = $_GET['nome_pesquisa'] ?? '';  // Operador de coalescência nul
             $.ajax({
                 type: 'POST',
                 url: 'excluir_registro.php',
-                data: { id_aluno: id_aluno }
+                data: { codigo_prd: codigo_prd }
             })
                 .done(function(resposta) {
                     const dataResult = JSON.parse(resposta);

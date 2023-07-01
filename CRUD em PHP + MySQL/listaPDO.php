@@ -5,31 +5,31 @@ require_once 'utils.php';
 function listarDadosPDO($filtro='%%') {
     $conn = conectarPDO();
 
-    $stmt = $conn->prepare('SELECT * FROM aluno WHERE nome LIKE :nome_aluno');
-    $stmt->bindParam(':nome_aluno', $filtro, PDO::PARAM_STR);
+    $stmt = $conn->prepare('SELECT * FROM produto WHERE descricao_prd LIKE :descricao_prd');
+    $stmt->bindParam(':descricao_prd', $filtro, PDO::PARAM_STR);
     $stmt->execute();
 
     echo '<div class="container table-responsive">';
     echo '<table class="table table-striped table-bordered table-hover">
-              <caption>Relação de Alunos</caption>
+              <caption>Relação de Produtos</caption>
               <thead class="table-dark">
-                  <tr>
-                      <th>Id</th>
-                      <th>Nome</th>
-                      <th>Nascimento</th>
-                      <th>Salário (R$)</th>
+                  <tr> 
+                      <th >codigo_prd</th>
+                      <th >descricao_prd</th>
+                      <th >data_cadastro</th>
+                      <th >preco (R$)</th>
                   </tr>
               </thead>';
 
-    while($aluno = $stmt->fetch()) {
-        $data_nascimento = date('d-m-Y', strtotime($aluno['nascimento']));
-        $salario = number_format($aluno['salario'],2,',','.');
+    while($produto = $stmt->fetch()) {
+        $data_cadastro = date('d-m-Y', strtotime($produto['nascimento']));
+        $preco = number_format($produto['preco'],2,',','.');
 
         echo "<tr>
-                  <td style='width: 10%;'>{$aluno['id_aluno']}</td>
-                  <td style='width: 40%;'>{$aluno['nome']}</td>
-                  <td style='width: 25%;' class='text-center'>{$data_nascimento}</td>
-                  <td style='width: 25%;' class='text-end'>{$salario}</td>
+                  <td style='width: 10%;'>{$produto['codigo_prd']}</td>
+                  <td style='width: 40%;'>{$produto['descricao_prd']}</td>
+                  <td style='width: 25%;' class='text-center'>{$data_cadastro}</td>
+                  <td style='width: 25%;' class='text-end'>{$preco}</td>
               </tr>";
     }
 

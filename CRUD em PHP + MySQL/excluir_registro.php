@@ -1,14 +1,14 @@
 <?php
 require_once "conexoes.php";
 
-$id = $_REQUEST['id_aluno'];
+$id = $_REQUEST['codigo prd'];
 
 if($id) {
     $conn = conectarPDO();
 
-    $sql = 'DELETE FROM aluno WHERE id_aluno=:id_aluno';
+    $sql = 'DELETE FROM produto WHERE codigo_prd=:codigo_prd';
     $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':id_aluno', $id, PDO::PARAM_STR);
+    $stmt->bindParam(':codigo_prd', $codigo_prd, PDO::PARAM_STR);
 
     if ($stmt->execute()) {
         if ($stmt->rowCount()) {

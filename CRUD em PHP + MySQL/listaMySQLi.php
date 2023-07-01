@@ -4,24 +4,24 @@ require_once 'utils.php';
 
 function listarDadosMySQLi_PD() {
     $conn = conectarMySQLi_PD();
-    $alunos = mysqli_query($conn, 'SELECT * FROM produto');
+    $produtos = mysqli_query($conn, 'SELECT * FROM produto');
 
     echo '<style>#PD th, #PD td {border: 1px solid}</style>';
     echo '<table id="PD" style="border-collapse: collapse; border: 2px solid">';
-    echo '<caption>Relação de Alunos</caption>';
+    echo '<caption>Relação de Produtos</caption>';
     echo '<tr>';
-    echo '<th>ID</th>';
-    echo '<th>Nome</th>';
-    echo '<th>Nascimento</th>';
-    echo '<th>Salário (R$)</th>';
+    echo '<th>codigo_prd</th>';
+    echo '<th>descricao_prd</th>';
+    echo '<th>data_cadastro</th>';
+    echo '<th>preco (R$)</th>';
     echo '</tr>';
 
     while ($produto = mysqli_fetch_assoc($produtos)) {
         echo '<tr>';
-        echo '<td>' . $produto['id_aluno'] . '</td>';
-        echo '<td>' . $produto['nome'] . '</td>';
-        echo '<td>' . $produto['nascimento'] . '</td>';
-        echo '<td>' . $produto['salario'] . '</td>';
+        echo '<td>' . $produto['codigo_prd'] . '</td>';
+        echo '<td>' . $produto['descricao_prd'] . '</td>';
+        echo '<td>' . $produto['data_cadastro'] . '</td>';
+        echo '<td>' . $produto['preco'] . '</td>';
         echo '</tr>';
     }
 
@@ -40,30 +40,30 @@ function listarDadosMySQLi_OO($filtro='%%') {
     $stmt->execute();
 
     echo '<table class="mysqli">
-              <caption>Relação de Alunos</caption>
+              <caption>Relação de Produtos</caption>
               <tr>
-                  <th>ID</th>
-                  <th style="width: 40%;">Nome</th>
-                  <th >Nascimento</th>
-                  <th >Salário (R$)</th>
+                  <th>codigo_prd</th>
+                  <th style="width: 40%;">descricao_prd</th>
+                  <th >data_cadastro</th>
+                  <th >preco (R$)</th>
               </tr>';
 
-    $alunos = $stmt->get_result();
-    while($aluno = $alunos->fetch_assoc()) {
-        $data_nascimento = date('d-m-Y', strtotime($aluno['nascimento']));
-        $salario = number_format($aluno['salario'],2,',','.');
+    $produtos = $stmt->get_result();
+    while($produto = $produtos->fetch_assoc()) {
+        $data_cadastro = date('d-m-Y', strtotime($produto['data_cadastro']));
+        $preco = number_format($produto['peco'],2,',','.');
 
         echo "<tr>
-                  <td>{$aluno['id_aluno']}</td>
-                  <td>{$aluno['nome']}</td>
-                  <td style='text-align: center;'>{$data_nascimento}</td>
-                  <td style='text-align: right;'>{$salario}</td>
+                  <td>{$produto['codigo_prd']}</td>
+                  <td>{$produto['descricao_prd']}</td>
+                  <td style='text-align: center;'>{$data_cadastro}</td>
+                  <td style='text-align: right;'>{$preco}</td>
               </tr>";
     }
 
     echo '<tfoot><tr><td colspan="5" style="text-align: center">Data atual: ' . retornarDataAtual() . '</td></tr>';
     echo '</table>';
 
-    $alunos->free_result();
+    $produtos->free_result();
     $conn->close();
 }

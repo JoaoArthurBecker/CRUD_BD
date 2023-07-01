@@ -11,53 +11,55 @@ function verificaBD($conn) {
     }
 }
 
-function verificaTabelaCurso($conn) {
-    // Verifica se a tabela curso existe
+function verificaTabelaCategoria($conn) {
+    // Verifica se a tabela produto existe
     $stmt = $conn->query('SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
-                          WHERE (TABLE_SCHEMA = "'.BANCODEDADOS.'") AND (TABLE_NAME = "curso")');
+                          WHERE (TABLE_SCHEMA = "'.BANCODEDADOS.'") AND (TABLE_NAME = "categoria")');
 
     if (!$stmt->fetchColumn()) {
-        // Cria a tabela 'curso' se ela não existir e a popula com alguns registros
-        $stmt = $conn->query('CREATE TABLE IF NOT EXISTS curso ( 
-                                id_curso int AUTO_INCREMENT NOT NULL PRIMARY KEY,
-                                nome varchar(60) NOT NULL
-                              ) ENGINE=InnoDB;');
+        // Cria a tabela 'categoria' se ela não existir e a popula com alguns registros
+        $stmt = $conn->query('CREATE TABLE categoria (
+                                codigo_ctg INT AUTO_INCREMENT PRIMARY KEY,
+                                descricao_ctg VARCHAR(50) UNIQUE NOT NULL
+                            ) ENGINE=InnoDB;');
 
-        $stmt = $conn->query('INSERT INTO curso
-                              VALUES (null, "Ciência da Computação"),
-                                     (null, "Engenharia de Computação"),
-                                     (null, "Engenharia de Software"),
-                                     (null, "Sistemas de Informação"),
-                                     (null, "Design");');
+        $stmt = $conn->query('INSERT INTO categoria (
+                                VALUES (null, "Alimento"),
+                                       (null, "Higiene pessoal"),
+                                       (null, "Bebida"),
+                                       (null, "Higiene domestica")
+                             );');
     }
 }
-
-function verificaTabelaAluno($conn) {
-    // Verifica se a tabela curso existe
+function verificaTabelaProduto($conn) {
+    // Verifica se a tabela produto existe
     $stmt = $conn->query('SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
-                          WHERE (TABLE_SCHEMA = "'.BANCODEDADOS.'") AND (TABLE_NAME = "aluno")');
+                          WHERE (TABLE_SCHEMA = "'.BANCODEDADOS.'") AND (TABLE_NAME = "produto")');
 
     if (!$stmt->fetchColumn()) {
         // Cria a tabela 'aluno' se ela não existir e a popula com alguns registros
-        $stmt = $conn->query('CREATE TABLE IF NOT EXISTS aluno ( 
-                                  id_aluno int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                                  nome varchar(60) NOT NULL,
-                                  nascimento date DEFAULT NULL,
-                                  salario decimal(10,2) DEFAULT NULL,
-                                  sexo enum("m", "f", "n") NOT NULL DEFAULT "n",
-                                  ativo tinyint(1) NOT NULL DEFAULT "1",
-                                  id_curso int DEFAULT NULL,
-                                  foto longblob,
-                                  FOREIGN KEY (id_curso) REFERENCES curso(id_curso)
-                                ) ENGINE=InnoDB;');
+        $stmt = $conn->query('CREATE TABLE IF NOT EXISTS produto (
+                                codigo_prd INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+                                descricao_prd VARCHAR(50) UNIQUE NOT NULL,
+                                data_cadastro DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                preco DECIMAL(10,2) NOT NULL DEFAULT 0.0,
+                                ativo BOOL NOT NULL DEFAULT true,
+                                unidade CHAR(5) DEFAULT \'un\',
+                                tipo_comissao ENUM(\'s\', \'f\', \'p\') NOT NULL DEFAULT \'s\',
+                                codigo_ctg INT NOT NULL,
+                                foto LONGBLOB,
+                                FOREIGN KEY (codigo_ctg) REFERENCES categoria(codigo_ctg)
+                            ) ENGINE=InnoDB;');
+
 
         $foto = file_get_contents('default.png');
-        $stmt = $conn->prepare('INSERT INTO aluno 
-                                VALUES (null, "Fulano", "1990-10-25", 42.42, "n", 0, 1, :foto),
-                                       (null, "Beltrano", "2000-01-01", 1234.56, "m", 1, 2, :foto);');
+
+        $stmt = $conn->prepare('INSERT INTO produto 
+                                VALUES (null, "Esponja", "2010-10-25", 4.99, true, 100, "s", 2, :foto),
+                                       (null, "Coxinha", "2013-04-20", 4.50, true, 10, "s", 1, :foto);');
         $stmt->bindParam(':foto', $foto, PDO::PARAM_LOB);
         $stmt->execute();
-    }
+        }
 }
 
 function conectarPDO()
@@ -76,8 +78,8 @@ function conectarPDO()
             USUARIO,
             SENHA);
 
-        verificaTabelaCurso($conn);
-        verificaTabelaAluno($conn);
+        verificaTabelaProduto($conn);
+        verificaTabelaCategoria($conn);
 
         return $conn;
     } catch (PDOException $e) {

@@ -11,8 +11,8 @@ if(isset($_POST['submit'])) {
         $ativo = '0';
     }
 
-    if (!isset($_POST['id_aluno'])) {
-        $stmt = $conn->prepare('INSERT INTO aluno (nome, nascimento, salario, sexo, ativo, id_curso, foto) VALUES(:nome, :nascimento, :salario, :sexo, :ativo, :id_curso, :foto)');
+    if (!isset($_POST['codigo_prd'])) {
+        $stmt = $conn->prepare('INSERT INTO produto (descricao_prd, data_cadastro, preco, tipo_comissao, ativo, codigo_ctg, foto) VALUES(:descricao_prd, :data_cadastro, :preco, :tipo_comissao, :ativo, :codigo_ctg, :foto)');
 
         if (empty($_FILES['foto']['tmp_name'])) {
             $foto = file_get_contents('default.png');
@@ -21,20 +21,20 @@ if(isset($_POST['submit'])) {
         }
 
         $stmt->execute(array(
-            ':nome' => $_POST['nome'],
-            ':nascimento' => $_POST['nascimento'],
-            ':salario' => $_POST['salario'],
-            ':sexo' => $_POST['sexo'],
+            ':descricao_prd' => $_POST['descricao_prd'],
+            ':data_cadastro' => $_POST['data_cadastro'],
+            ':preco' => $_POST['preco'],
+            ':tipo_comissao' => $_POST['tipo_comissao'],
             ':ativo' => $ativo,
-            ':id_curso' => $_POST['id_curso'],
+            ':codigo_ctg' => $_POST['codigo_ctg'],
             ':foto' => $foto
         ));
     } else {
         $estadoFoto = (boolean) $_COOKIE['fotoLimpada'];
 
-        $sql = 'UPDATE aluno
-                    SET nome = :nome, nascimento = :nascimento, salario = :salario,
-                        sexo = :sexo, ativo = :ativo, id_curso = :id_curso';
+        $sql = 'UPDATE produto
+                    SET descricao_prd = :descricao_prd, data_cadastro = :data_cadastro, preco = :preco,
+                        tipo_comissao = :tipo_comissao, ativo = :ativo, codigo_ctg = :codigo_ctg';
 
         if (!empty($_FILES['foto']['tmp_name'])) {
             $sql .= ', foto = :foto';
@@ -44,56 +44,56 @@ if(isset($_POST['submit'])) {
             $foto = file_get_contents('default.png');
         }
 
-        $sql .= ' WHERE id_aluno = :id_aluno';
+        $sql .= ' WHERE codigo_prd = :codigo_prd';
         $stmt = $conn->prepare($sql);
 
-        $stmt->bindParam(':nome', $_POST['nome'], PDO::PARAM_STR);
-        $stmt->bindParam(':nascimento', $_POST['nascimento'], PDO::PARAM_STR);
-        $stmt->bindParam(':salario', $_POST['salario'], PDO::PARAM_STR);
-        $stmt->bindParam(':sexo', $_POST['sexo'], PDO::PARAM_STR);
+        $stmt->bindParam(':descricao_prd', $_POST['descricao_prd'], PDO::PARAM_STR);
+        $stmt->bindParam(':data_cadastro', $_POST['data_cadastro'], PDO::PARAM_STR);
+        $stmt->bindParam(':preco', $_POST['preco'], PDO::PARAM_STR);
+        $stmt->bindParam(':tipo_comissao', $_POST['tipo_comissao'], PDO::PARAM_STR);
         $stmt->bindParam(':ativo', $ativo, PDO::PARAM_BOOL);
-        $stmt->bindParam(':id_curso', $_POST['id_curso'], PDO::PARAM_STR);
+        $stmt->bindParam(':codigo_ctg', $_POST['codigo_ctg'], PDO::PARAM_STR);
 
         if (!empty($_FILES['foto']['tmp_name']) or $estadoFoto) {
             $stmt->bindParam(':foto', $foto, PDO::PARAM_LOB);
         }
 
-        $stmt->bindParam(':id_aluno', $_POST['id_aluno'], PDO::PARAM_STR);
+        $stmt->bindParam(':codigo_prd', $_POST['codigo_prd'], PDO::PARAM_STR);
 
         $stmt->execute();
     }
 
     header("Location: consulta.php");
 } else {
-    $idAluno = $_GET["id_aluno"] ?? null;
+    $idAluno = $_GET["codigo_prd"] ?? null;
 
     if (is_null($idAluno)) {
         $operacao = 'Inclusão';
 
-        $nome = '';
-        $nascimento = date('Y-m-d');
-        $salario = 0;
-        $sexo = 'f';
+        $descricao_prd = '';
+        $data_cadastro = date('Y-m-d');
+        $preco = 0;
+        $tipo_comissao = 's';
         $ativo = true;
-        $idCurso = 0;
+        $codigo_ctg = 0;
         $foto = null;
     } else {
         $operacao = 'Alteração';
 
-        $stmt = $conn->prepare('SELECT id_aluno, nome, nascimento, salario, sexo, ativo, id_curso, foto  
-                                         FROM aluno WHERE id_aluno = :id_aluno ');
-        $stmt->bindParam(':id_aluno', $idAluno);
+        $stmt = $conn->prepare('SELECT codigo_prd, descricao_prd, data_cadastro, preco, tipo_comissao, ativo, codigo_ctg, foto  
+                                         FROM produto WHERE codigo_prd = :codigo_prd ');
+        $stmt->bindParam(':codigo_prd', $codigo_prd);
         $stmt->execute();
 
-        $aluno = $stmt->fetch();
-        if (!$aluno) {
+        $produto = $stmt->fetch();
+        if (!$produto) {
             die('Falha no banco de dados!');
         }
 
-        list($idAluno, $nome, $nascimento, $salario, $sexo, $ativo, $idCurso, $foto) = $aluno;
+        list($codigo_prd, $descricao_prd, $data_cadastro, $preco, $tipo_comissao, $ativo, $codigo_ctg, $foto) = $produto;
     }
 
-    $operacao .= ' de Aluno';
+    $operacao .= ' de Produto';
 }
 ?>
 
@@ -113,7 +113,7 @@ if(isset($_POST['submit'])) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
 
-    <title>Cadastro de Alunos</title>
+    <title>Cadastro de Produtos</title>
 </head>
 
 <body>
@@ -130,32 +130,32 @@ if(isset($_POST['submit'])) {
 
     <form class="was-validated" id="form" class="row gx-3 gy-0" method="post" enctype=multipart/form-data>
         <?php
-        if (!is_null($idAluno)) {
-            echo '<input type="hidden" name="id_aluno" id="id_aluno" class="form-control" value="' . $idAluno . '">';
+        if (!is_null($codigo_prd)) {
+            echo '<input type="hidden" name="codigo_prd" id="codigo_prd" class="form-control" value="' . $codigo_prd . '">';
         }
         ?>
 
         <div class="form-floating mb-2">
-            <input type="text" name="nome" id="iNome" class="form-control" value="<?= $nome ?>"
-                   placeholder="Entre com seu nome" maxlength="60" required autofocus>
+            <input type="text" name="nome" id="iNome" class="form-control" value="<?= $produto ?>"
+                   placeholder="Entre com o nome do produto" maxlength="60" required autofocus>
             <label for="iNome">Nome</label>
         </div>
 
         <div class="form-floating mb-2">
             <input type="date"
-                   name="nascimento"
-                   id="iNascimento"
+                   name="cadastro"
+                   id="iCadastro"
                    class="form-control"
-                   value="<?= $nascimento ?>"
-                   placeholder="Data de nascimento"
+                   value="<?= $data_cadastro ?>"
+                   placeholder="Data de cadastro"
                    required />
-            <label for="idDataNascimento">Data de nascimento</label>
+            <label for="idDataCadastro">Data de cadastro</label>
         </div>
 
         <div class="input-group mb-2">
             <span class="input-group-text">$</span>
             <div class="form-floating ">
-                <input type="number" name="salario" id="iSalario" class="form-control" value="<?= $salario ?>"
+                <input type="number" name="salario" id="iSalario" class="form-control" value="<?= $preco ?>"
                        step="0.01" placeholder="Entre com seu salário" required>
                 <label for="iSalario">Salário</label>
             </div>
@@ -164,23 +164,23 @@ if(isset($_POST['submit'])) {
 
         <div class="row">
             <div class="mt-2 mb-2">
-                <fieldset id="sexo" class="form-control">
-                    <legend class="scheduler-border">Sexo</legend>
+                <fieldset id="tipo_comissao" class="form-control">
+                    <legend class="scheduler-border">Tipo_comissao</legend>
                     <div class="legenda">
                         <div class="form-check form-check-inline">
-                            <input type="radio" name="sexo" id="idMasc" value="m" class="form-check-input"
-                                <?= $sexo == 'm' ? "checked" : null ?> />
-                            <label for="idMasc">Masculino</label>
+                            <input type="radio" name="tipo_comissao" id="idMasc" value="s" class="form-check-input"
+                                <?= $tipo_comissao == 's' ? "checked" : null ?> />
+                            <label for="idMasc">Sem comissao</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input type="radio" name="sexo" id="idFem" value="f" class="form-check-input"
-                                <?= $sexo == 'f' ? "checked" : null ?> />
-                            <label for="idFem">Feminino</label>
+                            <input type="radio" name="tipo_comissao" id="idFem" value="f" class="form-check-input"
+                                <?= $tipo_comissao == 'f' ? "checked" : null ?> />
+                            <label for="idFem">Comissao fixa</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input type="radio" name="sexo" id="idNI" value="n" class="form-check-input"
-                                <?= $sexo == 'n' ? "checked" : null ?> />
-                            <label for="idNI">Não informado</label>
+                            <input type="radio" name="sexo" id="idNI" value="p" class="form-check-input"
+                                <?= $tipo_comissao == 'p' ? "checked" : null ?> />
+                            <label for="idNI">Percentual de comissao</label>
                         </div>
                     </div>
                 </fieldset>
@@ -194,18 +194,18 @@ if(isset($_POST['submit'])) {
         </div>
 
         <div class="form-floating mb-1">
-            <select class="form-select" name="id_curso" id="iCurso" required>
-                <option selected disabled value="">Escolha abaixo o curso</option>
+            <select class="form-select" name="codigo_ctg" id="iCodigo_ctg" required>
+                <option selected disabled value="">Escolha abaixo a categoria</option>
 
                 <?php
-                $stmt = $conn->query('SELECT * FROM curso');
-                while ($curso = $stmt->fetch()) {
-                    $selecionado = ($curso['id_curso'] == $idCurso) ? 'selected' : '';
-                    echo "<option $selecionado value={$curso['id_curso']}>{$curso['nome']}</option>";
+                $stmt = $conn->query('SELECT * FROM categoria');
+                while ($categoria = $stmt->fetch()) {
+                    $selecionado = ($categoria['codigo_ctg'] == $codigo_ctg) ? 'selected' : '';
+                    echo "<option $selecionado value={$categoria['codigo_ctg']}>{$categoria['produto']}</option>";
                 }
                 ?>
             </select>
-            <label for="id_curso">Curso</label>
+            <label for="codigo_ctg">Categoria</label>
         </div>
 
         <div class="form-group">

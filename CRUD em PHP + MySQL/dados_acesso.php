@@ -1,6 +1,6 @@
 <?php
 define('DSN', 'mysql');	// DSN: Database Source Name
 define('SERVIDOR', 'localhost');
-define('USUARIO', 'root');
+define('USUARIO', '');
 define('SENHA', '');
-define('BANCODEDADOS', 'CRUD_produtos');
+define('BANCODEDADOS', 'crud_produtos');

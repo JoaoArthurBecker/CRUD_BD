@@ -11,6 +11,16 @@
 <?php
 require_once 'listaMySQLi.php';
 require_once 'listaPDO.php';
+require_once 'conexoes.php';
+
+verificaBD();
+echo '<hr>';
+
+verificaTabelaCategoria();
+echo '<hr>';
+
+verificaTabelaProduto();
+echo '<hr>';
 
 // Listando os dados em forma de tabela
 listarDadosMySQLi_PD();
